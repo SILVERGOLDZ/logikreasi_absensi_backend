@@ -1,0 +1,67 @@
+model Employee {
+  id        Int  @id @default(autoincrement())
+
+  userId    Int  @unique
+  user      User @relation(fields: [userId], references: [id])
+
+
+  fullName          String
+  nik               String   @unique
+  birthPlace        String
+  birthDate         DateTime
+  gender            String
+  maritalStatus     String
+
+  address           String
+  phoneNumber       String
+  personalEmail     String?
+
+  employeeNumber    String   @unique
+  position          String
+  department        String
+  employmentStatus  String      
+  joinDate          DateTime
+  workLocation      String
+
+  basicSalary       Decimal?    @db.Decimal(15,2)
+  allowance         Decimal?    @db.Decimal(15,2)
+
+  bankName          String?
+  bankAccountNumber String?
+
+
+  npwpNumber        String?
+  taxInformation    String?
+
+  bpjsHealthNumber  String?
+  bpjsWorkNumber    String?
+
+
+  emergencyName        String?
+  emergencyRelationship String?
+  emergencyPhone       String?
+
+
+  photoUrl          String?
+  ktpUrl            String?
+  kkUrl             String?
+  npwpUrl           String?
+  diplomaUrl        String?
+  bankBookUrl       String?
+  bpjsUrl           String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model FamilyMember {
+  id           Int      @id @default(autoincrement())
+
+  employeeId   Int
+  employee     Employee @relation(fields: [employeeId], references: [id])
+
+  fullName     String
+  relationship String  
+  birthDate    DateTime?
+  phoneNumber  String?
+}

@@ -1,0 +1,1 @@
+export const APPROVER_ROLES = ["admin", "direktur", "owner", "hrd"];

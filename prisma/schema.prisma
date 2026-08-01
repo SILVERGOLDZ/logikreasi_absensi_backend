@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  photoUrl String?
+  role      String   @default("user")
+  fcmToken String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendance Attendance[]
+  announcement Announcement[]
+  reads AnnouncementRead[]
+  holidaysCreated Holiday[]
+  leaveRequests Leave[]
+  leaveApprovals LeaveApproval[]
+  overtimes           Overtime[]         @relation("OvertimeUser")
+  overtimeApprovals   OvertimeApproval[] @relation("OvertimeApprover")
+}
+
+
+
+enum AttendanceStatus {
+  HADIR
+  TERLAMBAT
+  ABSEN
+  SAKIT
+  CUTI
+  IZIN
+  LIBUR
+  BELUM_ABSEN
+  LEMBUR
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  date      String
+  clockIn   DateTime?         
+  clockOut  DateTime?              
+
+  status    AttendanceStatus
+  reason    String?
+
+  clockInSelfieUrl String?
+  clockOutSelfieUrl String?            
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([userId, date])         
+}
+
+enum AnnouncementStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  status      AnnouncementStatus @default(ACTIVE)
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reads AnnouncementRead[]
+  holidays Holiday[]    
+
+  @@index([createdById])
+}
+
+model AnnouncementRead {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  announcementId Int
+  readAt         DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  announcement Announcement @relation(fields: [announcementId], references: [id])
+
+  @@unique([userId, announcementId])
+  @@index([userId])
+  @@index([announcementId])
+}
+
+model Holiday {
+  id          Int      @id @default(autoincrement())
+  date        String  
+  reason      String   
+  isCancelled Boolean  @default(false)
+
+  announcementId Int?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id])
+
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([announcementId])
+}
+
+
+
+
+
+
+// tambahan Juli 25
+
+
+
+
+model Leave {
+  id            Int      @id @default(autoincrement())
+
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+
+  startDate     String
+  endDate       String
+
+  type          String
+  title         String
+  reason        String
+  attachmentUrls String[] @default([])
+
+  status        String   @default("pending")
+  isCancelled   Boolean  @default(false)
+
+  approvals     LeaveApproval[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model LeaveApproval {
+  id          Int      @id @default(autoincrement())
+
+  leaveId     Int
+  leave       Leave    @relation(fields: [leaveId], references: [id])
+
+  approverId  Int
+  approver    User     @relation(fields: [approverId], references: [id])
+
+  status      String   @default("pending") // pending, approved, rejected
+  note        String?
+
+  approvedAt  DateTime?
+
+  @@unique([leaveId, approverId])
+}
+
+model Overtime {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  user             User     @relation("OvertimeUser", fields: [userId], references: [id])
+
+  isRange          Boolean  @default(false) // false = per hari, true = rentang tanggal
+  startDate        String   // format "yyyy-MM-dd", sama seperti Leave.startDate
+  endDate          String   // sama dgn startDate kalau isRange = false
+
+  startTime        String   // format "HH:mm"
+  endTime          String   // format "HH:mm"
+
+  title            String
+  reason           String
+  compensationType String   // input bebas user, misal "Uang Rp 500.000" / "Libur pengganti 1 hari"
+
+  attachmentUrls   String[] @default([])
+  status           String   @default("pending") // pending | approved | rejected
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  approvals        OvertimeApproval[]
+
+  @@map("overtimes")
+}
+
+model OvertimeApproval {
+  id          Int       @id @default(autoincrement())
+  overtimeId  Int
+  overtime    Overtime  @relation(fields: [overtimeId], references: [id], onDelete: Cascade)
+  approverId  Int
+  approver    User      @relation("OvertimeApprover", fields: [approverId], references: [id])
+  status      String    @default("pending") // pending | approved | rejected
+  note        String?
+  approvedAt  DateTime?
+
+  @@unique([overtimeId, approverId], name: "overtimeId_approverId")
+  @@map("overtime_approvals")
+}

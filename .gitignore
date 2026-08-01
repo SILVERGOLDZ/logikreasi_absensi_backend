@@ -1,0 +1,12 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+/generated/prisma
+
+/generated/prisma
+
+config/logikreasi-absensi-firebase-adminsdk-fbsvc-9438b2765b.json
+test.js
