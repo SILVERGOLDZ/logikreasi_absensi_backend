@@ -82,7 +82,7 @@ export async function createHoliday({
       body: announcement.title,
       data: { type: "announcement", announcementId: String(announcement.id)},
     }).catch((err) =>
-        console.error("notifyUsers gagal:", err.message)
+        console.error("notifyAllUsers gagal:", err.message)
       );
 
     return {

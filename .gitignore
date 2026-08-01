@@ -10,3 +10,5 @@ node_modules
 
 config/logikreasi-absensi-firebase-adminsdk-fbsvc-9438b2765b.json
 test.js
+
+public/uploads

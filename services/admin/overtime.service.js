@@ -11,26 +11,104 @@ const overtimeInclude = {
   approvals: { include: { approver: { select: approverSelect } } },
 };
 
-export async function getPendingOvertimeApprovalsService(approverId) {
-  const rows = await prisma.overtimeApproval.findMany({
-    where: { approverId, status: "pending", overtime: { status: "pending" } },
-    include: { overtime: { include: overtimeInclude } },
-    orderBy: { id: "desc" },
-  });
-  return rows.map(function (r) {
-    return r.overtime;
-  });
+// Helper function
+function getCreatedAtFilter(dateRange) {
+  if (dateRange === "6m") {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return { gte: d };
+  }
+  if (dateRange === "1y") {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return { gte: d };
+  }
+  return undefined; // "all" -> tanpa filter tanggal
 }
 
-export async function getOvertimeApprovalHistoryService(approverId) {
-  const rows = await prisma.overtimeApproval.findMany({
-    where: { approverId, NOT: { status: "pending" } },
-    include: { overtime: { include: overtimeInclude } },
-    orderBy: { approvedAt: "desc" },
-  });
-  return rows.map(function (r) {
-    return r.overtime;
-  });
+// export async function getPendingOvertimeApprovalsService(approverId) {
+//   const rows = await prisma.overtimeApproval.findMany({
+//     where: { approverId, status: "pending", overtime: { status: "pending" } },
+//     include: { overtime: { include: overtimeInclude } },
+//     orderBy: { id: "desc" },
+//   });
+//   return rows.map(function (r) {
+//     return r.overtime;
+//   });
+// }
+
+// export async function getOvertimeApprovalHistoryService(approverId) {
+//   const rows = await prisma.overtimeApproval.findMany({
+//     where: { approverId, NOT: { status: "pending" } },
+//     include: { overtime: { include: overtimeInclude } },
+//     orderBy: { approvedAt: "desc" },
+//   });
+//   return rows.map(function (r) {
+//     return r.overtime;
+//   });
+// }
+
+export async function getPendingOvertimeApprovalsService(
+  approverId,
+  { page = 1, limit = 10, search = "", dateRange = "all" } = {}
+) {
+  const skip = (page - 1) * limit;
+  const createdAtFilter = getCreatedAtFilter(dateRange);
+
+  const where = {
+    approverId,
+    status: "pending",
+    overtime: {
+      status: "pending",
+      ...(search ? { user: { username: { contains: search, mode: "insensitive" } } } : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.overtimeApproval.findMany({
+      where,
+      include: { overtime: { include: overtimeInclude } },
+      orderBy: { overtime: { createdAt: "desc" } },
+      skip,
+      take: limit,
+    }),
+    prisma.overtimeApproval.count({ where }),
+  ]);
+
+  const data = rows.map((r) => r.overtime);
+  return { data, page, limit, total, hasMore: skip + data.length < total };
+}
+
+export async function getOvertimeApprovalHistoryService(
+  approverId,
+  { page = 1, limit = 10, search = "", dateRange = "all" } = {}
+) {
+  const skip = (page - 1) * limit;
+  const createdAtFilter = getCreatedAtFilter(dateRange);
+
+  const where = {
+    approverId,
+    NOT: { status: "pending" },
+    overtime: {
+      ...(search ? { user: { username: { contains: search, mode: "insensitive" } } } : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.overtimeApproval.findMany({
+      where,
+      include: { overtime: { include: overtimeInclude } },
+      orderBy: { overtime: { createdAt: "desc" } },
+      skip,
+      take: limit,
+    }),
+    prisma.overtimeApproval.count({ where }),
+  ]);
+
+  const data = rows.map((r) => r.overtime);
+  return { data, page, limit, total, hasMore: skip + data.length < total };
 }
 
 function getDateRange(startDate, endDate) {

@@ -19,10 +19,34 @@ function withAttachmentUrls(req) {
   };
 }
 
+// export async function getPendingOvertimeApprovalsController(req, res) {
+//   try {
+//     const data = await getPendingOvertimeApprovalsService(req.user.id);
+//     res.json(data.map(withAttachmentUrls(req)));
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// }
+
+// export async function getOvertimeApprovalHistoryController(req, res) {
+//   try {
+//     const data = await getOvertimeApprovalHistoryService(req.user.id);
+//     res.json(data.map(withAttachmentUrls(req)));
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// }
+
 export async function getPendingOvertimeApprovalsController(req, res) {
   try {
-    const data = await getPendingOvertimeApprovalsService(req.user.id);
-    res.json(data.map(withAttachmentUrls(req)));
+    const { page = 1, limit = 10, search = "", dateRange = "all" } = req.query;
+    const result = await getPendingOvertimeApprovalsService(req.user.id, {
+      page: Number(page),
+      limit: Number(limit),
+      search: String(search),
+      dateRange: String(dateRange),
+    });
+    res.json({ ...result, data: result.data.map(withAttachmentUrls(req)) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -30,8 +54,14 @@ export async function getPendingOvertimeApprovalsController(req, res) {
 
 export async function getOvertimeApprovalHistoryController(req, res) {
   try {
-    const data = await getOvertimeApprovalHistoryService(req.user.id);
-    res.json(data.map(withAttachmentUrls(req)));
+    const { page = 1, limit = 10, search = "", dateRange = "all" } = req.query;
+    const result = await getOvertimeApprovalHistoryService(req.user.id, {
+      page: Number(page),
+      limit: Number(limit),
+      search: String(search),
+      dateRange: String(dateRange),
+    });
+    res.json({ ...result, data: result.data.map(withAttachmentUrls(req)) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
