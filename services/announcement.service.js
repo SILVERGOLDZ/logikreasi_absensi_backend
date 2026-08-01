@@ -91,7 +91,7 @@ export async function createAnnouncement(createdById, title, content, req) {
     imageUrl: getPublicUrl(req, announcement.createdBy?.photoUrl?.replace(/^\/?uploads\//, '')),
     data: { type: "announcement", announcementId: String(announcement.id) },
   }).catch((err) =>
-    console.error("notifyUsers gagal:", err.message)
+    console.error("notifyAllUsers gagal:", err.message)
   );
 
   return {
