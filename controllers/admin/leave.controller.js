@@ -19,10 +19,34 @@ function withAttachmentUrls(req) {
   };
 }
 
+// export async function getPendingApprovalsController(req, res) {
+//   try {
+//     const data = await getPendingApprovalsService(req.user.id);
+//     res.json(data.map(withAttachmentUrls(req)));
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// }
+
+// export async function getApprovalHistoryController(req, res) {
+//   try {
+//     const data = await getApprovalHistoryService(req.user.id);
+//     res.json(data.map(withAttachmentUrls(req)));
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// }
+
 export async function getPendingApprovalsController(req, res) {
   try {
-    const data = await getPendingApprovalsService(req.user.id);
-    res.json(data.map(withAttachmentUrls(req)));
+    const { page = 1, limit = 10, search = "", dateRange = "all" } = req.query;
+    const result = await getPendingApprovalsService(req.user.id, {
+      page: Number(page),
+      limit: Number(limit),
+      search: String(search),
+      dateRange: String(dateRange),
+    });
+    res.json({ ...result, data: result.data.map(withAttachmentUrls(req)) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -30,29 +54,18 @@ export async function getPendingApprovalsController(req, res) {
 
 export async function getApprovalHistoryController(req, res) {
   try {
-    const data = await getApprovalHistoryService(req.user.id);
-    res.json(data.map(withAttachmentUrls(req)));
+    const { page = 1, limit = 10, search = "", dateRange = "all" } = req.query;
+    const result = await getApprovalHistoryService(req.user.id, {
+      page: Number(page),
+      limit: Number(limit),
+      search: String(search),
+      dateRange: String(dateRange),
+    });
+    res.json({ ...result, data: result.data.map(withAttachmentUrls(req)) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 }
-
-// export async function approveLeaveController(req, res) {
-//   try {
-//     const leaveId = parseInt(req.params.leaveId);
-//     const leave = await approveLeaveService({
-//       leaveId,
-//       approverId: req.user.id,
-//       note: req.body.note,
-//     });
-
-//     getIO().emit("calendarChanged", { message: "new data" });
-
-//     res.json(withAttachmentUrls(req)(leave));
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// }
 
 export async function approveLeaveController(req, res) {
   try {

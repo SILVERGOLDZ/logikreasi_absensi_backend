@@ -1,3 +1,4 @@
+// routes/admin/admin.route.js
 import express from "express";
 import { Router } from "express";
 import { createAnnouncementAdminController } from "#controllers/admin/announcement.controller";

@@ -11,26 +11,104 @@ const leaveInclude = {
   approvals: { include: { approver: { select: approverSelect } } },
 };
 
-export async function getPendingApprovalsService(approverId) {
-  const rows = await prisma.leaveApproval.findMany({
-    where: { approverId, status: "pending", leave: { status: "pending" } },
-    include: { leave: { include: leaveInclude } },
-    orderBy: { id: "desc" },
-  });
-  return rows.map(function (r) {
-    return r.leave;
-  });
+// Helper function
+function getCreatedAtFilter(dateRange) {
+  if (dateRange === "6m") {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 6);
+    return { gte: d };
+  }
+  if (dateRange === "1y") {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 1);
+    return { gte: d };
+  }
+  return undefined; // "all" -> tanpa filter tanggal
 }
 
-export async function getApprovalHistoryService(approverId) {
-  const rows = await prisma.leaveApproval.findMany({
-    where: { approverId, NOT: { status: "pending" } },
-    include: { leave: { include: leaveInclude } },
-    orderBy: { approvedAt: "desc" },
-  });
-  return rows.map(function (r) {
-    return r.leave;
-  });
+// export async function getPendingApprovalsService(approverId) {
+//   const rows = await prisma.leaveApproval.findMany({
+//     where: { approverId, status: "pending", leave: { status: "pending" } },
+//     include: { leave: { include: leaveInclude } },
+//     orderBy: { id: "desc" },
+//   });
+//   return rows.map(function (r) {
+//     return r.leave;
+//   });
+// }
+
+// export async function getApprovalHistoryService(approverId) {
+//   const rows = await prisma.leaveApproval.findMany({
+//     where: { approverId, NOT: { status: "pending" } },
+//     include: { leave: { include: leaveInclude } },
+//     orderBy: { approvedAt: "desc" },
+//   });
+//   return rows.map(function (r) {
+//     return r.leave;
+//   });
+// }
+
+export async function getPendingApprovalsService(
+  approverId,
+  { page = 1, limit = 10, search = "", dateRange = "all" } = {}
+) {
+  const skip = (page - 1) * limit;
+  const createdAtFilter = getCreatedAtFilter(dateRange);
+
+  const where = {
+    approverId,
+    status: "pending",
+    leave: {
+      status: "pending",
+      ...(search ? { user: { username: { contains: search, mode: "insensitive" } } } : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.leaveApproval.findMany({
+      where,
+      include: { leave: { include: leaveInclude } },
+      orderBy: { leave: { createdAt: "desc" } },
+      skip,
+      take: limit,
+    }),
+    prisma.leaveApproval.count({ where }),
+  ]);
+
+  const data = rows.map((r) => r.leave);
+  return { data, page, limit, total, hasMore: skip + data.length < total };
+}
+
+export async function getApprovalHistoryService(
+  approverId,
+  { page = 1, limit = 10, search = "", dateRange = "all" } = {}
+) {
+  const skip = (page - 1) * limit;
+  const createdAtFilter = getCreatedAtFilter(dateRange);
+
+  const where = {
+    approverId,
+    NOT: { status: "pending" },
+    leave: {
+      ...(search ? { user: { username: { contains: search, mode: "insensitive" } } } : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
+  };
+
+  const [rows, total] = await Promise.all([
+    prisma.leaveApproval.findMany({
+      where,
+      include: { leave: { include: leaveInclude } },
+      orderBy: { leave: { createdAt: "desc" } }, // catatan: sebelumnya approvedAt
+      skip,
+      take: limit,
+    }),
+    prisma.leaveApproval.count({ where }),
+  ]);
+
+  const data = rows.map((r) => r.leave);
+  return { data, page, limit, total, hasMore: skip + data.length < total };
 }
 
 function getDateRange(startDate, endDate) {
