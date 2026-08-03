@@ -40,11 +40,11 @@ export async function updateUserToken(userId, token) {
     data: { fcmToken: token },
   });
 
-  // ---------- Remove for a quick bug fix -----------------
+  // ---------- Remove this code if login takes to long for a quick bug fix -----------------
   // fire-and-forget: jangan await, biar request tidak nunggu FCM
-  // subscribeToTopic(token, TOPIC_ALL_USERS).catch((err) =>
-  //   console.error("subscribeToTopic gagal:", err.message)
-  // );
+  subscribeToTopic(token, TOPIC_ALL_USERS).catch((err) =>
+    console.error("subscribeToTopic gagal:", err.message)
+  );
 
   return user;
 }
@@ -52,8 +52,10 @@ export async function updateUserToken(userId, token) {
 export async function deleteUserToken(token) {
   if (!token) return null;
 
-  // ---------- Remove for a quick bug fix -----------------
-  // unsubscribeFromTopic(token, TOPIC_ALL_USERS);
+  // ---------- Remove this code if login takes to long for a quick bug fix -----------------
+  unsubscribeFromTopic(token, TOPIC_ALL_USERS).catch((err) =>
+    console.error("unsubscribeFromTopic gagal:", err.message)
+  );
   return prisma.user.updateMany({
     where: { fcmToken: token },
     data: { fcmToken: null },
