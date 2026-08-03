@@ -2,7 +2,8 @@
 import express from "express";
 import { Router } from "express";
 import { createAnnouncementAdminController } from "#controllers/admin/announcement.controller";
-import leaveAdminRoute from "./admin/leave.route.js";
+import leaveAdminRoute from "#routes/admin/leave.route";
+import attendanceAdminRoute from "#routes/admin/attendance.route";
 import { registerUserController } from "#controllers/admin/user.controller";
 import overtimeAdminRoute from "#routes/admin/overtime.route";
 
@@ -13,5 +14,6 @@ router.post("/user/register", registerUserController);
 router.post("/announcement", createAnnouncementAdminController);
 router.use("/leave", leaveAdminRoute);
 router.use("/overtime", overtimeAdminRoute);
+router.use("/attendance", attendanceAdminRoute);
 
 export default router;

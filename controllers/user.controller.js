@@ -43,7 +43,8 @@ import { getAllUsers } from "../services/user.service.js";
 
 export async function getUsers(req, res) {
   try {
-    const users = await getAllUsers();
+    const { search = "" } = req.query;
+    const users = await getAllUsers(String(search));
     res.status(200).json(users);
   } catch (err) {
     console.error("Gagal ambil daftar user:", err);
