@@ -2,7 +2,7 @@ import { getMessaging } from "firebase-admin/messaging";
 import "#lib/firebaseAdmin";
 import prisma from "#prisma/prisma.js";
 
-const FCM_TIMEOUT_MS = 5000;
+const FCM_TIMEOUT_MS = 10000;
 
 function withTimeout(promise, ms = FCM_TIMEOUT_MS, label = "FCM operation") {
   return Promise.race([

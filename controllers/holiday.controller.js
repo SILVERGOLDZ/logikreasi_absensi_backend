@@ -53,7 +53,7 @@ export async function cancelHolidayController(req, res) {
     const { updated, date } = await cancelHoliday(id);
 
     // sistem otomatis mengeluarkan pengumuman pembatalan holiday
-    const announcement = await createAnnouncement(req.user.id, `${updated.announcement.title} (Dibatalkan)`, `Libur pada ${date} dibatalkan`);
+    const announcement = await createAnnouncement(req.user.id, `${updated.announcement.title} (Dibatalkan)`, `Libur pada ${date} dibatalkan`, req);
     
     // broadcast realtime ke semua client yang terhubung
     getIO().emit("newAnnouncement", announcement);
