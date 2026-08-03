@@ -60,17 +60,13 @@ export async function updateProfilePhoto(userId, photoUrl) {
 
 // USER =======================================================
 
-export async function getAllUsers() {
+export async function getAllUsers(search = "") {
   return prisma.user.findMany({
-    select: {
-      id: true,
-      username: true,
-      photoUrl: true,
-      role: true,
-    },
-    orderBy: {
-      username: "asc",
-    },
+    where: search
+      ? { username: { contains: search, mode: "insensitive" } }
+      : undefined,
+    select: { id: true, username: true, photoUrl: true, role: true },
+    orderBy: { username: "asc" },
   });
 }
 

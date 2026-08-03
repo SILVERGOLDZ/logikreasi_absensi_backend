@@ -19,24 +19,6 @@ function withAttachmentUrls(req) {
   };
 }
 
-// export async function getPendingApprovalsController(req, res) {
-//   try {
-//     const data = await getPendingApprovalsService(req.user.id);
-//     res.json(data.map(withAttachmentUrls(req)));
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// }
-
-// export async function getApprovalHistoryController(req, res) {
-//   try {
-//     const data = await getApprovalHistoryService(req.user.id);
-//     res.json(data.map(withAttachmentUrls(req)));
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// }
-
 export async function getPendingApprovalsController(req, res) {
   try {
     const { page = 1, limit = 10, search = "", dateRange = "all" } = req.query;
@@ -99,17 +81,3 @@ export async function rejectLeaveController(req, res) {
     res.status(400).json({ message: err.message });
   }
 }
-
-// export async function rejectLeaveController(req, res) {
-//   try {
-//     const leaveId = parseInt(req.params.leaveId);
-//     const leave = await rejectLeaveService({
-//       leaveId,
-//       approverId: req.user.id,
-//       note: req.body.note,
-//     });
-//     res.json(withAttachmentUrls(req)(leave));
-//   } catch (err) {
-//     res.status(400).json({ message: err.message });
-//   }
-// }
