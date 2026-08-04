@@ -52,6 +52,23 @@ app.use("/api/leave", leaveRoute);
 app.use("/api/overtime", overtimeRoute);
 app.use("/api/admin", isAdmin, adminRoute);
 app.use("/api/notification", notificationRoute);
+
+// uploads
+
+const attachmentFolders = ['leave-attachments', 'overtime-attachments'];
+
+attachmentFolders.forEach((folder) => {
+  app.use(
+    `/uploads/${folder}`,
+    express.static(path.join(__dirname, 'public/uploads', folder), {
+      setHeaders: (res, filePath) => {
+        const filename = path.basename(filePath);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      },
+    })
+  );
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 
