@@ -1,1 +1,1 @@
-export const APPROVER_ROLES = ["admin", "direktur", "owner", "hrd"];
+export const APPROVER_ROLES = ["admin", "direktur", "owner", "hrd", "app developer"];

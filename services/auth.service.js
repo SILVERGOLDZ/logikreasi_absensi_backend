@@ -7,3 +7,9 @@ export async function getLoginInfo(email){
       }
     });
 }
+
+export async function getUserById(id) {
+  return await prisma.user.findUnique({
+    where: { id },
+  });
+}
