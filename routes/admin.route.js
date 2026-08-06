@@ -4,12 +4,12 @@ import { Router } from "express";
 import { createAnnouncementAdminController } from "#controllers/admin/announcement.controller";
 import leaveAdminRoute from "#routes/admin/leave.route";
 import attendanceAdminRoute from "#routes/admin/attendance.route";
-import { registerUserController } from "#controllers/admin/user.controller";
+import { getUserRolesController, registerUserController } from "#controllers/admin/user.controller";
 import overtimeAdminRoute from "#routes/admin/overtime.route";
 
 const router = Router();
 
-// router.post("/add-user", registerUserController);
+router.get("/user/roles", getUserRolesController);
 router.post("/user/register", registerUserController);
 router.post("/announcement", createAnnouncementAdminController);
 router.use("/leave", leaveAdminRoute);
