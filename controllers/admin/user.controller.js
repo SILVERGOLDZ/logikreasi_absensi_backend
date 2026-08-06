@@ -1,15 +1,20 @@
-import { registerUserByAdmin } from "#services/admin/user.service";
+import { registerUserByAdmin, getDistinctUserRoles } from "#services/admin/user.service";
+
+const ROLE_REGEX = /^[a-z_]+$/; // wajib huruf kecil, boleh underscore, tanpa spasi/simbol lain
 
 export async function registerUserController(req, res) {
   try {
-    const { username, email, role } = req.body;
+    const { username, email } = req.body;
+    let { role } = req.body;
 
     if (!username || !email || !role) {
       return res.status(400).json({ error: "username, email, dan role wajib diisi" });
     }
 
-    if (!["admin", "user"].includes(role)) {
-      return res.status(400).json({ error: "Role tidak valid" });
+    role = role.trim().toLowerCase();
+
+    if (!ROLE_REGEX.test(role)) {
+      return res.status(400).json({ error: "Role hanya boleh huruf kecil dan underscore, tanpa spasi" });
     }
 
     const { user, generatedPassword } = await registerUserByAdmin({ username, email, role });
@@ -22,5 +27,15 @@ export async function registerUserController(req, res) {
   } catch (err) {
     const statusCode = err.statusCode || 500;
     res.status(statusCode).json({ error: err.message || "Gagal membuat user" });
+  }
+}
+
+export async function getUserRolesController(req, res) {
+  try {
+    const roles = await getDistinctUserRoles();
+    res.status(200).json({ roles });
+  } catch (err) {
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({ error: err.message || "Gagal mengambil daftar role" });
   }
 }

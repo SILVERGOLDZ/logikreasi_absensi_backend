@@ -40,3 +40,12 @@ export async function registerUserByAdmin({ username, email, role }) {
 
   return { user, generatedPassword: plainPassword };
 }
+
+export async function getDistinctUserRoles() {
+  const rows = await prisma.user.findMany({
+    distinct: ["role"],
+    select: { role: true },
+    orderBy: { role: "asc" },
+  });
+  return rows.map((r) => r.role);
+}

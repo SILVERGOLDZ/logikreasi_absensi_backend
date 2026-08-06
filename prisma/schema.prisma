@@ -120,15 +120,6 @@ model Holiday {
 }
 
 
-
-
-
-
-// tambahan Juli 25
-
-
-
-
 model Leave {
   id            Int      @id @default(autoincrement())
 
